@@ -1,503 +1,96 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Онлайн-ассистент для регистрации</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
-    <style>
-        /* Стили для адаптивного чат-контейнера */
-        .chat-container {
-            max-width: 500px;
-            margin: 20px auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            height: 500px; /* Фиксированная высота контейнера */
-            font-family: 'Inter', sans-serif;
-            position: relative; /* Добавляем позиционирование для абсолютного позиционирования кнопки */
-        }
+<div align="center">
+  <sup>Special thanks to:</sup>
+  <br><br>
+  <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=yazi" target="_blank">
+    <img alt="Warp sponsorship" width="300" src="https://github.com/user-attachments/assets/c7f141e7-9751-407d-bb0e-d6f2c487b34f">
+    <br>
+    <b>Warp, the intelligent terminal</b>
+    <br>
+    <sup>Yazi's AI-powered terminal of choice!<br>Available for macOS, Linux and Windows</sup>
+  </a>
+</div>
 
-        .chat-header {
-            background-color: #f0f4f8;
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
-            font-weight: 600;
-            color: #1e293b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Inter', sans-serif;
-        }
+<br>
 
-        .chat-messages {
-            flex-grow: 1;
-            padding: 1rem;
-            overflow-y: auto; /* Добавляем полосу прокрутки */
-            display: flex;
-            flex-direction: column;
-            font-family: 'Inter', sans-serif;
-        }
+## Yazi - ⚡️ Blazing Fast Terminal File Manager
 
-        .message {
-            margin-bottom: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            font-family: 'Inter', sans-serif;
-        }
+Yazi (means "duck") is a terminal file manager written in Rust, based on non-blocking async I/O. It aims to provide an efficient, user-friendly, and customizable file management experience.
 
-        .message-content {
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            max-width: 85%;
-            font-family: 'Inter', sans-serif;
-        }
+💡 A new article explaining its internal workings: [Why is Yazi Fast?](https://yazi-rs.github.io/blog/why-is-yazi-fast)
 
-        .sent {
-            align-self: flex-end;
-            background-color: #dcf8c6;
-            color: #1e293b;
-            border-bottom-right-radius: 0;
-            font-family: 'Inter', sans-serif;
-        }
+- 🚀 **Full Asynchronous Support**: All I/O operations are asynchronous, CPU tasks are spread across multiple threads, making the most of available resources.
+- 💪 **Powerful Async Task Scheduling and Management**: Provides real-time progress updates, task cancellation, and internal task priority assignment.
+- 🖼️ **Built-in Support for Multiple Image Protocols**: Also integrated with Überzug++ and Chafa, covering almost all terminals.
+- 🌟 **Built-in Code Highlighting and Image Decoding**: Combined with the pre-loading mechanism, greatly accelerates image and normal file loading.
+- 🔌 **Concurrent Plugin System**: UI plugins (rewriting most of the UI), functional plugins, custom previewer/preloader/spotter/fetcher; Just some pieces of Lua.
+- 📡 **Data Distribution Service**: Built on a client-server architecture (no additional server process required), integrated with a Lua-based publish-subscribe model, achieving cross-instance communication and state persistence.
+- 📦 **Package Manager**: Install plugins and themes with one command, keeping them up-to-date, or pin them to a specific version.
+- 🧰 Integration with ripgrep, fd, fzf, zoxide
+- 💫 Vim-like input/pick/confirm/which/notify component, auto-completion for cd paths
+- 🏷️ Multi-Tab Support, Cross-directory selection, Scrollable Preview (for videos, PDFs, archives, code, directories, etc.)
+- 🔄 Bulk Renaming, Archive Extraction, Visual Mode, File Chooser, [Git Integration](https://github.com/yazi-rs/plugins/tree/main/git.yazi), [Mount Manager](https://github.com/yazi-rs/plugins/tree/main/mount.yazi)
+- 🎨 Theme System, Mouse Support, Trash Bin, Custom Layouts, CSI u, OSC 52
+- ... and more!
 
-        .received {
-            align-self: flex-start;
-            background-color: #f0f4f8;
-            color: #1e293b;
-            border-bottom-left-radius: 0;
-            font-family: 'Inter', sans-serif;
-        }
+https://github.com/sxyazi/yazi/assets/17523360/92ff23fa-0cd5-4f04-b387-894c12265cc7
 
-        .message-timestamp {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-            align-self: flex-end;
-            font-family: 'Inter', sans-serif;
-        }
+## Project status
 
-        .chat-input {
-            padding: 1rem;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            font-family: 'Inter', sans-serif;
-        }
+Public beta, can be used as a daily driver.
 
-        .input-field {
-            flex-grow: 1;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            margin-right: 0.75rem;
-            font-size: 1rem;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-        }
+Yazi is currently in heavy development, expect breaking changes.
 
-        .input-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-            font-family: 'Inter', sans-serif;
-        }
+## Documentation
 
-        .send-button {
-            background-color: #0078D7; /* Цвет кнопки ID */
-            color: #ffffff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            font-family: 'Inter', sans-serif;
-        }
+- Usage: https://yazi-rs.github.io/docs/installation
+- Features: https://yazi-rs.github.io/features
 
-        .send-button:hover {
-            background-color: #005a9e; /* Более темный синий при наведении */
-            font-family: 'Inter', sans-serif;
-        }
+## Discussion
 
-        .send-button-icon {
-            margin-right: 0.5rem;
-            height: 1rem;
-            width: 1rem;
-        }
+- Discord Server (English mainly): https://discord.gg/qfADduSdJu
+- Telegram Group (Chinese mainly): https://t.me/yazi_rs
 
-        @media (max-width: 640px) {
-            .chat-container {
-                margin: 1rem;
-                max-width: 100%;
-            }
-            .input-field {
-                margin-right: 0.5rem;
-            }
-            .send-button {
-                padding: 0.75rem 1rem;
-            }
-        }
+## Image Preview
 
-        /* Добавляем стили для индикатора онлайн-статуса */
-        .online-indicator {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background-color: #6ee7b7;
-            margin-right: 0.5rem;
-            display: inline-block;
-        }
+| Platform                                                                     | Protocol                               | Support                                               |
+| ---------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------- |
+| [kitty](https://github.com/kovidgoyal/kitty) (>= 0.28.0)                     | [Kitty unicode placeholders][kgp]      | ✅ Built-in                                           |
+| [iTerm2](https://iterm2.com)                                                 | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [WezTerm](https://github.com/wez/wezterm)                                    | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [Konsole](https://invent.kde.org/utilities/konsole)                          | [Kitty old protocol][kgp-old]          | ✅ Built-in                                           |
+| [foot](https://codeberg.org/dnkl/foot)                                       | [Sixel graphics format][sixel]         | ✅ Built-in                                           |
+| [Ghostty](https://github.com/ghostty-org/ghostty)                            | [Kitty unicode placeholders][kgp]      | ✅ Built-in                                           |
+| [Windows Terminal](https://github.com/microsoft/terminal) (>= v1.22.10352.0) | [Sixel graphics format][sixel]         | ✅ Built-in                                           |
+| [st with Sixel patch](https://github.com/bakkeby/st-flexipatch)              | [Sixel graphics format][sixel]         | ✅ Built-in                                           |
+| [Warp](https://www.warp.dev)                                                 | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [Tabby](https://github.com/Eugeny/tabby)                                     | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [VSCode](https://github.com/microsoft/vscode)                                | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [Rio](https://github.com/raphamorim/rio)                                     | [Inline images protocol][iip]          | ❌ Rio doesn't correctly clear images [#709][rio-bug] |
+| [Black Box](https://gitlab.gnome.org/raggesilver/blackbox)                   | [Sixel graphics format][sixel]         | ✅ Built-in                                           |
+| [Hyper](https://github.com/vercel/hyper)                                     | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| [Bobcat](https://github.com/ismail-yilmaz/Bobcat)                            | [Inline images protocol][iip]          | ✅ Built-in                                           |
+| X11 / Wayland                                                                | Window system protocol                 | ☑️ [Überzug++][ueberzug] required                     |
+| Fallback                                                                     | [ASCII art (Unicode block)][ascii-art] | ☑️ [Chafa][chafa] required                            |
 
-        .offline-indicator {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background-color: #f94144;
-            margin-right: 0.5rem;
-            display: inline-block;
-        }
+See https://yazi-rs.github.io/docs/image-preview for details.
 
-        /* Стили для кнопки "Получить Газпром Бизнес ID" */
-        #get-gb-id-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #0078D7; /* Цвет компании Газпром нефть */
-            color: #ffffff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem; /* Изменяем на закругленные углы */
-            font-size: 1rem;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease-in-out, background-color 0.3s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: auto; /* Убираем фиксированную ширину */
-            height: auto; /* Убираем фиксированную высоту */
-            border: none;
-            white-space: nowrap; /* Добавляем, чтобы текст не переносился */
-            padding: 0.75rem 1rem; /* Немного уменьшаем вертикальный padding */
-        }
+<!-- Protocols -->
 
-        #get-gb-id-button:hover {
-            background-color: #005a9e; /* Более темный синий при наведении */
-            transform: scale(1.1);
-        }
+[kgp]: https://sw.kovidgoyal.net/kitty/graphics-protocol/#unicode-placeholders
+[kgp-old]: https://github.com/sxyazi/yazi/blob/main/yazi-adapter/src/drivers/kgp_old.rs
+[iip]: https://iterm2.com/documentation-images.html
+[sixel]: https://www.vt100.net/docs/vt3xx-gp/chapter14.html
+[ascii-art]: https://en.wikipedia.org/wiki/ASCII_art
 
-        /* Стили для всплывающего уведомления */
-        #gb-id-tooltip {
-            position: absolute;
-            bottom: calc(100% + 10px);
-            right: 0;
-            background-color: #333333;
-            color: #ffffff;
-            padding: 0.5rem 1rem;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            transform: translateY(-10px);
-            z-index: 1001;
-        }
+<!-- Dependencies -->
 
-        #get-gb-id-button:hover + #gb-id-tooltip {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+[ueberzug]: https://github.com/jstkdng/ueberzugpp
+[chafa]: https://hpjansson.org/chafa/
 
-        .tooltip-arrow {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333333 transparent transparent transparent;
-            transform: translateY(-1px);
-        }
+<!-- Rio bug -->
 
-    </style>
-</head>
-<body class="bg-gray-100 font-sans antialiased">
-    <button id="get-gb-id-button">
-        <b style="font-weight: bold;">Получить ID</b>
-        <div id="gb-id-tooltip">
-            Получить Газпром Бизнес ID
-            <div class="tooltip-arrow"></div>
-        </div>
-    </button>
-    <div class="chat-container" style="display: none;">
-        <div class="chat-header">
-            <span class="online-indicator"></span>Онлайн-консультант Костик
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            </div>
-        <div class="chat-input">
-            <input type="text" id="input-field" class="input-field" placeholder="Введите ваш вопрос...">
-            <button id="send-button" class="send-button">
-                Отправить
-            </button>
-        </div>
+[rio-bug]: https://github.com/raphamorim/rio/issues/709
 
-    </div>
+## License
 
-    <script>
-        const chatContainer = document.querySelector('.chat-container');
-        const chatMessages = document.getElementById('chat-messages');
-        const inputField = document.getElementById('input-field');
-        const sendButton = document.getElementById('send-button');
-        const getGbIdButton = document.getElementById('get-gb-id-button');
-        const registrationSteps = [
-            "Добрый день! Я помогу вам пройти процесс регистрации в системе Газпром Бизнес ID",
-            "Укажите ИНН организации",
-            "Укажите КПП организации",
-            "Введите вашу фамилию",
-            "Введите ваше имя",
-            "Укажите номер телефона",
-            "Укажите адрес электронной почты",
-            "Отлично! Теперь придумайте пароль. Он должен быть не менее 8 символов",
-            "Пожалуйста, подтвердите ваш пароль",
-            "Спасибо за предоставленную информацию! Для завершения процедуры регистрации подтвердите адрес электронной почты",
-            "Остались вопросы? Направьте обращение в техническую поддержку по адресу bidsupport@gazprom-neft.ru"
-        ];
-        let currentStep = 0;
-        let userINN = "";
-        let userKPP = "";
-        let userEmail = "";
-        let userPassword = "";
-        let userName = "";
-        let userSurname = "";
-        let userPhone = "";
-        let chatVisible = false; // Добавляем переменную для отслеживания видимости чата
-        let savedMessages = []; // Массив для хранения сообщений
-        let isFirstOpening = true;
-        let initialMessageShown = false; // Добавляем флаг для отслеживания показа первого сообщения
-
-        function addMessage(text, type) {
-            const message = document.createElement('div');
-            message.classList.add('message');
-            const messageContent = document.createElement('div');
-            messageContent.classList.add('message-content', type);
-            messageContent.textContent = text;
-            const timestamp = document.createElement('div');
-            timestamp.classList.add('message-timestamp');
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            timestamp.textContent = `${hours}:${minutes}`;
-            message.appendChild(messageContent);
-            message.appendChild(timestamp);
-            chatMessages.appendChild(message);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            savedMessages.push({ text, type, timestamp: `${hours}:${minutes}` }); // Сохраняем сообщение с временем
-        }
-
-        function validateEmail(email) {
-            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(String(email).toLowerCase());
-        }
-
-        function validatePassword(password) {
-            return password.length >= 8;
-        }
-
-        function validateINN(inn) {
-            return /^\d{10}$/.test(inn);
-        }
-
-        function validateKPP(kpp) {
-            return /^\d{9}$/.test(kpp);
-        }
-
-        function validateName(name) {
-            return /^[а-яА-Я]+$/.test(name);
-        }
-
-        function validatePhone(phone) {
-            return /^\+7\d{10}$/.test(phone);
-        }
-
-        function nextStep(userInput) {
-            switch (currentStep) {
-                case 1:
-                    if (validateINN(userInput)) {
-                        userINN = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage(userInput, 'sent');
-                        addMessage("ИНН должен содержать 10 цифр", 'received');
-                    }
-                    break;
-                case 2:
-                    if (validateKPP(userInput)) {
-                        userKPP = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage(userInput, 'sent');
-                        addMessage("КПП должен содержать 9 цифр", 'received');
-                    }
-                    break;
-                case 3:
-                    if (validateName(userInput)) {
-                        userSurname = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage(userInput, 'sent');
-                        addMessage("Фамилия должна содержать только буквы (кириллица)", 'received');
-                    }
-                    break;
-                case 4:
-                    if (validateName(userInput)) {
-                        userName = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage(userInput, 'sent');
-                        addMessage("Имя должно содержать только буквы (кириллица)", 'received');
-                    }
-                    break;
-                case 5:
-                    if (validatePhone(userInput)) {
-                        userPhone = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage(userInput, 'sent');
-                        addMessage("Номер телефона должен начинаться с +7 и содержать 11 цифр, например: +79998887766", 'received');
-                    }
-                    break;
-                case 6:
-                    if (validateEmail(userInput)) {
-                        userEmail = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage("Пожалуйста, введите корректный адрес электронной почты", 'received');
-                    }
-                    break;
-                case 7:
-                    if (validatePassword(userInput)) {
-                        userPassword = userInput;
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage("Пароль должен быть не менее 8 символов", 'received');
-                    }
-                    break;
-                case 8:
-                    if (userInput === userPassword) {
-                        addMessage(userInput, 'sent');
-                        addMessage(registrationSteps[currentStep + 1], 'received');
-                        currentStep++;
-                    } else {
-                        addMessage("Пароли не совпадают. Попробуйте еще раз", 'received');
-                    }
-                    break;
-                 case 9:
-                    addMessage(userInput, 'sent');
-                    addMessage(`Мы направили письмо для подтверждения на ваш почтовый ящик ${userEmail}`, 'received');
-                    currentStep++;
-                    break;
-                case 10:
-                    addMessage(userInput, 'sent');
-                    addMessage(registrationSteps[currentStep], 'received');
-                    inputField.disabled = true;
-                    sendButton.disabled = true;
-                    break;
-                default:
-                    addMessage("Извините, произошла ошибка.", 'received');
-            }
-            inputField.value = '';
-        }
-
-        // Обработчик клика для кнопки "Получить Газпром Бизнес ID"
-        getGbIdButton.addEventListener('click', () => {
-            if (chatVisible) {
-                chatContainer.style.display = 'none'; // Скрываем контейнер чата
-                chatVisible = false; // Устанавливаем флаг в false
-            } else {
-                chatContainer.style.display = 'flex'; // Показываем контейнер чата
-                // Восстанавливаем состояние чата
-                chatMessages.innerHTML = ''; // Очищаем сообщения
-                if (isFirstOpening) {
-                    addMessage(registrationSteps[0], 'received'); // Выводим первое сообщение
-                    setTimeout(() => {
-                        addMessage(registrationSteps[1], 'received');
-                        currentStep = 1;
-                    }, 3000);
-                    isFirstOpening = false;
-                    initialMessageShown = true; // Устанавливаем флаг, что сообщение показано
-
-                } else {
-                    savedMessages.forEach(message => { // Выводим сохраненные сообщения
-                        const messageDiv = document.createElement('div');
-                        messageDiv.classList.add('message');
-                        const messageContentDiv = document.createElement('div');
-                        messageContentDiv.classList.add('message-content', message.type);
-                        messageContentDiv.textContent = message.text;
-                        const timestampDiv = document.createElement('div');
-                        timestampDiv.classList.add('message-timestamp');
-                        timestampDiv.textContent = message.timestamp;
-                        messageDiv.appendChild(messageContentDiv);
-                        messageDiv.appendChild(timestampDiv);
-                        chatMessages.appendChild(messageDiv);
-                    });
-                }
-
-                if (currentStep < registrationSteps.length) {
-                    inputField.disabled = false;
-                    sendButton.disabled = false;
-                    inputField.focus();
-                } else {
-                    inputField.disabled = true;
-                    sendButton.disabled = true;
-                }
-                chatVisible = true; // Устанавливаем флаг в true
-            }
-        });
-
-        // Обработчик клика для кнопки "Отправить"
-        sendButton.addEventListener('click', () => {
-            const userInput = inputField.value;
-            if (userInput.trim() !== "") {
-                nextStep(userInput);
-            } else {
-                addMessage("Пожалуйста, введите сообщение.", 'received');
-            }
-        });
-
-        // Обработчик нажатия клавиши Enter в поле ввода
-        inputField.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                sendButton.click(); // Вызываем клик на кнопке "Отправить"
-            }
-        });
-
-        // Скрываем контейнер чата при загрузке страницы
-        chatContainer.style.display = 'none';
-    </script>
-</body>
-</html>
+Yazi is MIT-licensed. For more information check the [LICENSE](LICENSE) file.
