@@ -1,4 +1,4 @@
-use futures::future::join_all;
+use futures::future::{join_all, select_all};
 use mlua::{ExternalError, ExternalResult, Function, IntoLuaMulti, Lua, MultiValue, Value, Variadic};
 use tokio::sync::oneshot;
 use yazi_dds::Sendable;
@@ -72,12 +72,26 @@ impl Utils {
 		})
 	}
 
-	// TODO
-	pub(super) fn select(lua: &Lua) -> mlua::Result<Function> {
-		lua.create_async_function(|_lua, _futs: MultiValue| async move { Ok(()) })
-	}
+       pub(super) fn select(lua: &Lua) -> mlua::Result<Function> {
+               lua.create_async_function(|_, futs: MultiValue| async move {
+                       let futs = futs
+                               .into_iter()
+                               .map(|v| match v {
+                                       Value::Function(f) => Ok(f.call_async::<MultiValue>(())),
+                                       _ => Err("`ya.select()` expects functions".into_lua_err()),
+                               })
+                               .collect::<mlua::Result<Vec<_>>>()?;
 
-	async fn retrieve(id: String, calls: usize, args: MultiValue) -> mlua::Result<Vec<Data>> {
+                       if futs.is_empty() {
+                               return Ok(MultiValue::new());
+                       }
+
+                       let (res, _idx, _remaining) = select_all(futs).await;
+                       res
+               })
+       }
+
+        async fn retrieve(id: String, calls: usize, args: MultiValue) -> mlua::Result<Vec<Data>> {
 		let args = Sendable::values_to_list(args)?;
 		let (tx, rx) = oneshot::channel::<Vec<Data>>();
 
@@ -100,7 +114,64 @@ impl Utils {
 
 		AppProxy::plugin(PluginOpt::new_callback(id.clone(), callback));
 
-		rx.await
-			.map_err(|_| format!("Failed to execute sync block-{calls} in `{id}` plugin").into_lua_err())
-	}
+                rx.await
+                        .map_err(|_| format!("Failed to execute sync block-{calls} in `{id}` plugin").into_lua_err())
+        }
+}
+
+#[cfg(test)]
+mod tests {
+       use super::*;
+       use mlua::{Lua, Value};
+       use std::time::Duration;
+
+       #[tokio::test]
+       async fn test_select_returns_first() {
+               let lua = Lua::new();
+               let select = Utils::select(&lua).unwrap();
+
+               let f1 = lua
+                       .create_async_function(|_, ()| async move {
+                               tokio::time::sleep(Duration::from_millis(50)).await;
+                               Ok(MultiValue::from_vec(vec![Value::Integer(1)]))
+                       })
+                       .unwrap();
+
+               let f2 = lua
+                       .create_async_function(|_, ()| async move {
+                               tokio::time::sleep(Duration::from_millis(10)).await;
+                               Ok(MultiValue::from_vec(vec![Value::Integer(2)]))
+                       })
+                       .unwrap();
+
+               let args = MultiValue::from_vec(vec![Value::Function(f1), Value::Function(f2)]);
+               let res: MultiValue = select.call_async(args).await.unwrap();
+
+               assert_eq!(res.len(), 1);
+               assert_eq!(res.get(0).unwrap().clone(), Value::Integer(2));
+       }
+
+       #[tokio::test]
+       async fn test_select_error() {
+               let lua = Lua::new();
+               let select = Utils::select(&lua).unwrap();
+
+               let ok = lua
+                       .create_async_function(|_, ()| async move {
+                               tokio::time::sleep(Duration::from_millis(20)).await;
+                               Ok(MultiValue::from_vec(vec![Value::Integer(3)]))
+                       })
+                       .unwrap();
+
+               let err_fn = lua
+                       .create_async_function(|_, ()| async move {
+                               tokio::time::sleep(Duration::from_millis(10)).await;
+                               Err::<MultiValue, _>("boom".into_lua_err())
+                       })
+                       .unwrap();
+
+               let args = MultiValue::from_vec(vec![Value::Function(err_fn), Value::Function(ok)]);
+               let res = select.call_async::<MultiValue>(args).await;
+               assert!(res.is_err());
+       }
 }
