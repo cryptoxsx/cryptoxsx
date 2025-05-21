@@ -212,7 +212,7 @@
             z-index: 1001;
         }
 
-        #get-gb-id-button:hover + #gb-id-tooltip {
+        #get-gb-id-button:hover > #gb-id-tooltip {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
